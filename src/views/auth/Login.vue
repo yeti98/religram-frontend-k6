@@ -47,7 +47,7 @@
                 <div class="login-fb">
                     <p>
                         <i aria-hidden="true" class="fa fa-facebook-square"></i>
-                        <a>Log in with facebook</a>
+                        <a @click="logInWithFacebook">Log in with facebook</a>
                     </p>
                 </div>
                 <p class="forgot-pass">
@@ -68,8 +68,28 @@
 </template>
 
 <script>
+
+    window.fbAsyncInit = function () {
+        FB.init({
+            appId: "375868253100420",
+            cookie: true, // This is important, it's not enabled by default
+            version: "v2.2"
+        });
+    };
+
+    (function (d, s, id) {
+        var js,
+            fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+            return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    })(document, "script", "facebook-jssdk");
     import auth from "../../axios/axios-auth";
-    import {password, username, email} from "../../validate/validate"
+    import {email, password, username} from "../../validate/validate"
 
     export default {
         data() {
@@ -85,9 +105,42 @@
         },
 
         methods: {
+            logInWithFacebook() {
+                FB.login(
+                    response => {
+                        if (response.authResponse) {
+                            const access_token = response.authResponse.accessToken;
+                            // console.log(access_token);
+                            auth
+                                .post("/login/facebook", {accessToken: access_token})
+                                .then(res => {
+                                    if (res.status == 200) {
+                                        let userData = {
+                                            id: res.data.user.id,
+                                            username: res.data.user.username,
+                                            email: res.data.user.email,
+                                            fullname: res.data.user.fullname,
+                                            token: res.data.token,
+                                            avatar: res.data.user.avatar,
+                                        };
+                                        this.$store.dispatch("authUser", userData);
+                                        this.$router.push({name: "home"});
+                                    }
+                                })
+                                .catch(err => {
+                                    if (err) {
+                                        console.log(err.response);
+                                    }
+                                });
+                        }
+                    },
+                    {scope: "email", auth_type: "reauthenticate"}
+                );
+                return false;
+            },
             onSubmit() {
                 this.$v.$touch();
-                console.log(this.$v.email)
+                console.log(this.$v.email);
                 if ((!this.$v.email.$error || !this.$v.username.$error) && !this.$v.password.$error) {
                     let formData = {
                         username: this.username,
