@@ -15,9 +15,9 @@
                     <p v-if="!$v.username.maxLength" style="color:red">Usename is too long</p>-->
 
                     <input
-                            :class="{invalid: $v.username.$error && $v.useremail.$error}"
+                            :class="{invalid: $v.username.$error}"
                             class="input-text"
-                            id="username useremail"
+                            id="username"
                             name="login-user"
                             placeholder="Username or Email"
                             type="text"
@@ -33,7 +33,7 @@
                             v-model="password"
                     />
                     <button
-                            :class="{disableButton: ($v.username.$error || $v.useremail.$error) && $v.password.$error}"
+                            :class="{disableButton: ($v.email.$error || $v.username.$error) && $v.password.$error}"
                             class="btn btn-full"
                             id="login_submit"
                             name="login-submit"
@@ -69,7 +69,7 @@
 
 <script>
     import auth from "../../axios/axios-auth";
-    import {password, useremail, username} from "../../validate/validate"
+    import {password, username, email} from "../../validate/validate"
 
     export default {
         data() {
@@ -81,13 +81,14 @@
         },
 
         validations: {
-            username, password, useremail
+            username, password, email
         },
 
         methods: {
             onSubmit() {
                 this.$v.$touch();
-                if ((!this.$v.username.$error || !this.$v.useremail.$error) && !this.$v.password.$error) {
+                console.log(this.$v.email)
+                if ((!this.$v.email.$error || !this.$v.username.$error) && !this.$v.password.$error) {
                     let formData = {
                         username: this.username,
                         password: this.password
@@ -101,7 +102,8 @@
                                     username: res.data.user.username,
                                     email: res.data.user.email,
                                     fullname: res.data.user.fullname,
-                                    token: res.data.token
+                                    token: res.data.token,
+                                    avatar: res.data.user.avatar
                                 };
                                 this.$store.dispatch("authUser", userData);
                                 this.$router.push({name: "home"});

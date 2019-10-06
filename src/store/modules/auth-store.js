@@ -3,7 +3,8 @@ const state = {
     username: "",
     fullname: "",
     email: "",
-    token: ""
+    token: "",
+    avatar: ""
 };
 const getters = {};
 const mutations = {
@@ -13,6 +14,7 @@ const mutations = {
         state.fullname = userData.fullname;
         state.email = userData.email;
         state.token = userData.token;
+        state.avatar = userData.avatar
     },
 
     clearAuth(state) {
@@ -20,6 +22,8 @@ const mutations = {
         state.fullname = "";
         state.email = "";
         state.token = "";
+        state.id = null;
+        state.avatar = ""
     }
 };
 const actions = {
@@ -30,6 +34,7 @@ const actions = {
         localStorage.setItem('username', userData.username);
         localStorage.setItem('fullname', userData.fullname);
         localStorage.setItem('email', userData.email)
+        localStorage.setItem("avatar", userData.avatar)
     },
 
     clearAuth({commit}) {
@@ -39,6 +44,8 @@ const actions = {
         localStorage.removeItem('id');
         localStorage.removeItem('email');
         localStorage.removeItem('username');
+        localStorage.removeItem('avatar');
+
     },
 
     tryToLogin({commit}) {
