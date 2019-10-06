@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Login from './views/auth/Login';
 import Signup from "@/views/auth/Signup";
+import SignupFacebook from "@/views/auth/SignupFacebook";
 
 Vue.use(Router);
 
@@ -24,6 +25,11 @@ export default new Router({
             path: "/signup",
             name: "signup",
             component: Signup
-        }
-    ]
+        },
+
+        {
+            path: "/signupfacebook",
+            name: "signupfacebook",
+            component: SignupFacebook
+        }]
 })

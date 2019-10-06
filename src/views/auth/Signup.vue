@@ -121,7 +121,6 @@
 
         methods: {
             logInWithFacebook() {
-                let checkStatus = 0;
                 FB.login(
                     response => {
                         if (response.authResponse) {
@@ -145,8 +144,15 @@
                                 })
                                 .catch(err => {
                                     if (err) {
-                                        console.log(err.response);
-                                        setTimeout(() => this.error = "", 2000)
+                                        console.log("login facebook error",err.response);
+                                        auth
+                                            .post("/signup/facebook", {accessToken: access_token})
+                                            .then(res => {
+                                                localStorage.setItem('email', res.data.email);
+                                                localStorage.setItem("avatar", res.data.avatar);
+                                                localStorage.setItem("fullname", res.data.fullname);
+                                                this.$router.push({name: "signupfacebook"})
+                                            });
                                     }
                                 });
                         }
@@ -154,7 +160,8 @@
                     {scope: "email", auth_type: "reauthenticate"}
                 );
                 return false;
-            },
+            }
+            ,
             onSubmit() {
                 this.$v.$touch();
                 if (!this.$v.$invalid) {
