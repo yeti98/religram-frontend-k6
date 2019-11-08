@@ -7,19 +7,41 @@
             </div>
         </div>
         <div class="content">
-            <div class="form form-login">
-                <form @submit.prevent="onSubmit" id="form_login">
-                    <!-- <p v-if="!$v.username.$error" style="color:green">Ting ting</p>
-                    <p v-if="!$v.username.required" style="color:red">Usename is required</p>
-                    <p v-if="!$v.username.minLength" style="color:red">Usename is too short</p>
-                    <p v-if="!$v.username.maxLength" style="color:red">Usename is too long</p>-->
-
+            <div class="form form-sign-up">
+                <div class="login-fb login-fb-v2">
+                    <p>
+                        <i aria-hidden="true" class="fa fa-facebook"></i>
+                        <a @click="logInWithFacebook()">Log in with facebook</a>
+                    </p>
+                </div>
+                <div class="label-break">
+                    <span>or</span>
+                </div>
+                <form @submit.prevent="onSubmit" id="form_sign_up">
+                    <input
+                            :class="{invalid: $v.email.$error}"
+                            class="input-text"
+                            id="email"
+                            name="signup-email"
+                            placeholder="Email"
+                            type="text"
+                            v-model="email"
+                    />
+                    <input
+                            :class="{invalid: $v.fullname.$error}"
+                            class="input-text"
+                            id="fullname"
+                            name="signup-name"
+                            placeholder="Full name"
+                            type="text"
+                            v-model="fullname"
+                    />
                     <input
                             :class="{invalid: $v.username.$error}"
                             class="input-text"
                             id="username"
-                            name="login-user"
-                            placeholder="Username or Email"
+                            name="signup-user"
+                            placeholder="User name"
                             type="text"
                             v-model="username"
                     />
@@ -27,48 +49,37 @@
                             :class="{invalid: $v.password.$error}"
                             class="input-text"
                             id="password"
-                            name="login-pass"
+                            name="signup-pass"
                             placeholder="Password"
                             type="password"
                             v-model="password"
                     />
-                    <button
-                            :class="{disableButton: ($v.email.$error || $v.username.$error) && $v.password.$error}"
-                            class="btn btn-full"
-                            id="login_submit"
-                            name="login-submit"
-                            type="submit"
-                    >Log in
-                    </button>
+                    <input
+                            :class="{invalid: $v.confirmPassword.$error}"
+                            class="input-text"
+                            id="confirmPassword"
+                            name="signup-pass-cf"
+                            placeholder="Confirm password"
+                            type="password"
+                            v-model="confirmPassword"
+                    />
+                    <button class="btn btn-full" id="signup_submit" name="signup-submit" type="submit">Sign up</button>
                 </form>
-                <div class="label-break">
-                    <span>or</span>
-                </div>
-                <div class="login-fb">
-                    <p>
-                        <i aria-hidden="true" class="fa fa-facebook-square"></i>
-                        <a @click="logInWithFacebook">Log in with facebook</a>
-                    </p>
-                </div>
-                <p class="forgot-pass">
-                    <a @click="$router.push({name: 'forgotpassword'})" href title>Forgot password?</a>
-                </p>
             </div>
             <div class="sign-up">
                 <p>
-                    Don't have an account?
-                    <a @click="signup" href>Sign up</a>
+                    Have a account?
+                    <a @click="goLogin" href>Log in</a>
                 </p>
             </div>
         </div>
-        <div class="message message-error" v-show="error != ''">
+        <div class="message message-error" v-show="error!='' ">
             <p>{{error}}</p>
         </div>
     </div>
 </template>
 
 <script>
-
     window.fbAsyncInit = function () {
         FB.init({
             appId: "375868253100420",
@@ -89,19 +100,23 @@
         fjs.parentNode.insertBefore(js, fjs);
     })(document, "script", "facebook-jssdk");
     import auth from "../../axios/axios-auth";
-    import {email, password, username} from "../../validate/validate"
+    import {confirmPassword, email, fullname, password, username} from "@/validate/validate";
+
 
     export default {
         data() {
             return {
                 username: "",
                 password: "",
+                email: "",
+                fullname: localStorage.getItem('fullname'),
+                confirmPassword: "",
                 error: ""
             };
         },
 
         validations: {
-            username, password, email
+            password, confirmPassword, fullname, username, email
         },
 
         methods: {
@@ -129,6 +144,7 @@
                                 })
                                 .catch(err => {
                                     if (err) {
+                                        console.log("login facebook error",err.response);
                                         auth
                                             .post("/signup/facebook", {accessToken: access_token})
                                             .then(res => {
@@ -144,17 +160,19 @@
                     {scope: "email", auth_type: "reauthenticate"}
                 );
                 return false;
-            },
+            }
+            ,
             onSubmit() {
                 this.$v.$touch();
-                console.log(this.$v.email);
-                if ((!this.$v.email.$error || !this.$v.username.$error) && !this.$v.password.$error) {
+                if (!this.$v.$invalid) {
                     let formData = {
                         username: this.username,
-                        password: this.password
+                        email: this.email,
+                        password: this.password,
+                        fullname: this.fullname
                     };
                     auth
-                        .post("/login", formData)
+                        .post("/signup", formData)
                         .then(res => {
                             if (res.status == 200) {
                                 let userData = {
@@ -163,7 +181,7 @@
                                     email: res.data.user.email,
                                     fullname: res.data.user.fullname,
                                     token: res.data.token,
-                                    avatar: res.data.user.avatar
+                                    avatar: res.data.user.avatar,
                                 };
                                 this.$store.dispatch("authUser", userData);
                                 this.$router.push({name: "home"});
@@ -172,13 +190,19 @@
                         .catch(err => {
                             if (err) {
                                 this.error = err.response.data.message;
-                                setTimeout(() => this.error = "", 2000)
+                                setTimeout(() => this.error = '', 2000)
                             }
                         });
                 }
             },
-            signup() {
-                this.$router.push({name: "signup"});
+
+            update(userData) {
+                this.email = userData.email;
+                this.fullname = userData.fullname;
+            },
+
+            goLogin() {
+                this.$router.push({name: "login"});
             }
         }
     };
@@ -188,9 +212,5 @@
     .invalid {
         border-width: 2px;
         border-color: rgb(226, 35, 35);
-    }
-
-    .disableButton {
-        background-color: grey;
     }
 </style>

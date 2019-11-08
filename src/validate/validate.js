@@ -1,9 +1,10 @@
-import {maxLength, minLength, required, email} from "vuelidate/lib/validators";
+import {maxLength, minLength, required, sameAs, email as amail} from "vuelidate/lib/validators";
+
 
 export const username = {
     required,
     minLength: minLength(6),
-    maxLength: maxLength(32)
+    maxLength: maxLength(32),
 };
 export const password = {
     required,
@@ -11,7 +12,16 @@ export const password = {
     maxLength: maxLength(32)
 };
 
-export const useremail = {
+export const email = {
+    minLength: minLength(1),
+    amail
+};
+export const fullname = {
     required,
-    email
+    minLength: minLength(4),
+    maxLength: maxLength(32)
+};
+export const confirmPassword = {
+    required,
+    sameAsPassword: sameAs("password")
 };
