@@ -35,7 +35,6 @@
 <script>
     import ReadMore from "@/components/home/ReadMore";
     import ReplyComment from "./ReplyComment";
-    import {eventBus} from "@/main";
 
     export default {
         name: "comment",
