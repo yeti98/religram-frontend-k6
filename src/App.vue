@@ -1,38 +1,41 @@
 <template>
-    <div id="app">
-        <router-view/>
+    <div id="app" class="wrap">
+        <headers></headers>
+        <keep-alive>
+            <router-view :key="$route.fullPath" />
+        </keep-alive>
+        <div class="message message-error" v-show="error != ''">
+            <p>{{error}}</p>
+        </div>
     </div>
 </template>
 
 <script>
+    import Headers from "@/components/Header";
+    import {eventBus} from "@/main";
     export default {
+        components: {
+            Headers
+        },
         created() {
-            // this.$router.push({ name: "login" });
             this.$store.dispatch("tryToLogin");
-            // if (this.$store.state.token == "") this.$router.push({ name: "login" });
+        },
+        data(){
+            return{
+                error: ""
+            }
+        },
+        mounted() {
+            eventBus.$on("notifyError", (msg) => {
+                this.error = msg;
+                setTimeout(() => this.error = "", 2000)
+            })
+        },
+        destroyed() {
+            eventBus.$off("notifyError")
         }
     };
 </script>
 
-<style lang="scss">
-    #app {
-        font-family: "Avenir", Helvetica, Arial, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-align: center;
-        color: #2c3e50;
-    }
-
-    #nav {
-        padding: 30px;
-
-        a {
-            font-weight: bold;
-            color: #2c3e50;
-
-            &.router-link-exact-active {
-                color: #42b983;
-            }
-        }
-    }
+<style>
 </style>

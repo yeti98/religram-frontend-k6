@@ -1,19 +1,8 @@
 <template>
     <div class="wrap">
-        <div class="header">
-            <div class="logo">
-                <a href="#" title>Religram</a>
-                <p class="slogan">Heaven in your hands</p>
-            </div>
-        </div>
         <div class="content">
             <div class="form form-login">
                 <form @submit.prevent="onSubmit" id="form_login">
-                    <!-- <p v-if="!$v.username.$error" style="color:green">Ting ting</p>
-                    <p v-if="!$v.username.required" style="color:red">Usename is required</p>
-                    <p v-if="!$v.username.minLength" style="color:red">Usename is too short</p>
-                    <p v-if="!$v.username.maxLength" style="color:red">Usename is too long</p>-->
-
                     <input
                             :class="{invalid: $v.username.$error}"
                             class="input-text"
@@ -51,24 +40,25 @@
                     </p>
                 </div>
                 <p class="forgot-pass">
-                    <a @click="$router.push({name: 'forgotpassword'})" href title>Forgot password?</a>
+                    <a @click="$router.push({name: 'forgotpassword'})" title>Forgot password?</a>
                 </p>
             </div>
             <div class="sign-up">
                 <p>
                     Don't have an account?
-                    <a @click="signup" href>Sign up</a>
+                    <a @click="signup">Sign up</a>
                 </p>
             </div>
         </div>
-        <div class="message message-error" v-show="error != ''">
-            <p>{{error}}</p>
-        </div>
+
     </div>
 </template>
 
 <script>
-
+    import {RepositoryFactory} from '../../repositories/RepositoryFactory'
+    import {email, password, username} from "../../validate/validate"
+    import {eventBus} from "@/main";
+    const AuthRepository = RepositoryFactory.get('auth');
     window.fbAsyncInit = function () {
         FB.init({
             appId: "375868253100420",
@@ -88,15 +78,12 @@
         js.src = "https://connect.facebook.net/en_US/sdk.js";
         fjs.parentNode.insertBefore(js, fjs);
     })(document, "script", "facebook-jssdk");
-    import auth from "../../axios/axios-auth";
-    import {email, password, username} from "../../validate/validate"
 
     export default {
         data() {
             return {
                 username: "",
                 password: "",
-                error: ""
             };
         },
 
@@ -110,71 +97,64 @@
                     response => {
                         if (response.authResponse) {
                             const access_token = response.authResponse.accessToken;
-                            // console.log(access_token);
-                            auth
-                                .post("/login/facebook", {accessToken: access_token})
-                                .then(res => {
-                                    if (res.status == 200) {
-                                        let userData = {
-                                            id: res.data.user.id,
-                                            username: res.data.user.username,
-                                            email: res.data.user.email,
-                                            fullname: res.data.user.fullname,
-                                            token: res.data.token,
-                                            avatar: res.data.user.avatar,
-                                        };
-                                        this.$store.dispatch("authUser", userData);
-                                        this.$router.push({name: "home"});
-                                    }
-                                })
-                                .catch(err => {
-                                    if (err) {
-                                        auth
-                                            .post("/signup/facebook", {accessToken: access_token})
-                                            .then(res => {
-                                                localStorage.setItem('email', res.data.email);
-                                                localStorage.setItem("avatar", res.data.avatar);
-                                                localStorage.setItem("fullname", res.data.fullname);
-                                                this.$router.push({name: "signupfacebook"})
-                                            });
-                                    }
-                                });
+                            this.tryLoginWithFacebook(access_token);
                         }
                     },
                     {scope: "email", auth_type: "reauthenticate"}
                 );
                 return false;
             },
-            onSubmit() {
+            async tryLoginWithFacebook(access_token) {
+                var res = await AuthRepository.loginFacebook({accessToken: access_token});
+                if (res.status === 200) {
+                    let userData = {
+                        id: res.data.user.id,
+                        username: res.data.user.username,
+                        email: res.data.user.email,
+                        fullname: res.data.user.fullname,
+                        token: res.data.token,
+                        avatar: res.data.user.avatar,
+                    };
+                    this.$store.dispatch("authUser", userData);
+                    this.$router.push({name: "home"});
+                } else {
+                    this.trySignupWithFacebook(access_token)
+                }
+            },
+            async trySignupWithFacebook(access_token) {
+                var res = await AuthRepository.signupFacebook({accessToken: access_token});
+                if (res.status === 200) {
+                    localStorage.setItem('email', res.data.email);
+                    localStorage.setItem("avatar", res.data.avatar);
+                    localStorage.setItem("fullname", res.data.fullname);
+                    this.$router.push({name: "signupfacebook"})
+                }
+            },
+            async onSubmit() {
                 this.$v.$touch();
-                console.log(this.$v.email);
                 if ((!this.$v.email.$error || !this.$v.username.$error) && !this.$v.password.$error) {
                     let formData = {
                         username: this.username,
                         password: this.password
                     };
-                    auth
-                        .post("/login", formData)
-                        .then(res => {
-                            if (res.status == 200) {
-                                let userData = {
-                                    id: res.data.user.id,
-                                    username: res.data.user.username,
-                                    email: res.data.user.email,
-                                    fullname: res.data.user.fullname,
-                                    token: res.data.token,
-                                    avatar: res.data.user.avatar
-                                };
-                                this.$store.dispatch("authUser", userData);
-                                this.$router.push({name: "home"});
-                            }
-                        })
-                        .catch(err => {
-                            if (err) {
-                                this.error = err.response.data.message;
-                                setTimeout(() => this.error = "", 2000)
-                            }
-                        });
+                    try{
+                        var res = await AuthRepository.login(formData);
+                        if (res.status === 200) {
+                            let userData = {
+                                id: res.data.user.id,
+                                username: res.data.user.username,
+                                email: res.data.user.email,
+                                fullname: res.data.user.fullname,
+                                token: res.data.token,
+                                avatar: res.data.user.avatar
+                            };
+                            this.$store.dispatch("authUser", userData);
+                            this.$router.push({name: "home"});
+                        }
+                    }
+                    catch (e) {
+                        eventBus.$emit("notifyError", e.response.data.message)
+                    }
                 }
             },
             signup() {

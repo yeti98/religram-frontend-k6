@@ -1,11 +1,5 @@
 <template>
     <div class="wrap">
-        <div class="header">
-            <div class="logo">
-                <a href="#" title>Religram</a>
-                <p class="slogan">Heaven in your hands</p>
-            </div>
-        </div>
         <div class="content">
             <div class="form form-sign-up">
                 <div class="login-fb login-fb-v2">
@@ -69,17 +63,19 @@
             <div class="sign-up">
                 <p>
                     Have a account?
-                    <a @click="goLogin" href>Log in</a>
+                    <a @click="goLogin">Log in</a>
                 </p>
             </div>
-        </div>
-        <div class="message message-error" v-show="error!='' ">
-            <p>{{error}}</p>
         </div>
     </div>
 </template>
 
 <script>
+    import {RepositoryFactory} from '../../repositories/RepositoryFactory'
+    import {confirmPassword, email, fullname, password, username} from "@/validate/validate";
+    import {eventBus} from "@/main";
+
+    const AuthRepository = RepositoryFactory.get('auth');
     window.fbAsyncInit = function () {
         FB.init({
             appId: "375868253100420",
@@ -99,9 +95,6 @@
         js.src = "https://connect.facebook.net/en_US/sdk.js";
         fjs.parentNode.insertBefore(js, fjs);
     })(document, "script", "facebook-jssdk");
-    import auth from "../../axios/axios-auth";
-    import {confirmPassword, email, fullname, password, username} from "@/validate/validate";
-
 
     export default {
         data() {
@@ -109,14 +102,17 @@
                 username: "",
                 password: "",
                 email: "",
-                fullname: localStorage.getItem('fullname'),
+                fullname: localStorage.getItem("fullname"),
                 confirmPassword: "",
-                error: ""
             };
         },
 
         validations: {
-            password, confirmPassword, fullname, username, email
+            password,
+            confirmPassword,
+            fullname,
+            username,
+            email
         },
 
         methods: {
@@ -125,44 +121,40 @@
                     response => {
                         if (response.authResponse) {
                             const access_token = response.authResponse.accessToken;
-                            // console.log(access_token);
-                            auth
-                                .post("/login/facebook", {accessToken: access_token})
-                                .then(res => {
-                                    if (res.status == 200) {
-                                        let userData = {
-                                            id: res.data.user.id,
-                                            username: res.data.user.username,
-                                            email: res.data.user.email,
-                                            fullname: res.data.user.fullname,
-                                            token: res.data.token,
-                                            avatar: res.data.user.avatar,
-                                        };
-                                        this.$store.dispatch("authUser", userData);
-                                        this.$router.push({name: "home"});
-                                    }
-                                })
-                                .catch(err => {
-                                    if (err) {
-                                        console.log("login facebook error",err.response);
-                                        auth
-                                            .post("/signup/facebook", {accessToken: access_token})
-                                            .then(res => {
-                                                localStorage.setItem('email', res.data.email);
-                                                localStorage.setItem("avatar", res.data.avatar);
-                                                localStorage.setItem("fullname", res.data.fullname);
-                                                this.$router.push({name: "signupfacebook"})
-                                            });
-                                    }
-                                });
+                            this.tryLoginWithFacebook(access_token);
                         }
                     },
                     {scope: "email", auth_type: "reauthenticate"}
                 );
                 return false;
-            }
-            ,
-            onSubmit() {
+            },
+            async tryLoginWithFacebook(access_token) {
+                var res = await AuthRepository.loginFacebook({accessToken: access_token});
+                if (res.status === 200) {
+                    let userData = {
+                        id: res.data.user.id,
+                        username: res.data.user.username,
+                        email: res.data.user.email,
+                        fullname: res.data.user.fullname,
+                        token: res.data.token,
+                        avatar: res.data.user.avatar,
+                    };
+                    this.$store.dispatch("authUser", userData);
+                    this.$router.push({name: "home"});
+                } else {
+                    this.trySignupWithFacebook(access_token)
+                }
+            },
+            async trySignupWithFacebook(access_token) {
+                var res = await AuthRepository.signupFacebook({accessToken: access_token});
+                if (res.status === 200) {
+                    localStorage.setItem('email', res.data.email);
+                    localStorage.setItem("avatar", res.data.avatar);
+                    localStorage.setItem("fullname", res.data.fullname);
+                    this.$router.push({name: "signupfacebook"})
+                }
+            },
+            async onSubmit() {
                 this.$v.$touch();
                 if (!this.$v.$invalid) {
                     let formData = {
@@ -171,28 +163,25 @@
                         password: this.password,
                         fullname: this.fullname
                     };
-                    auth
-                        .post("/signup", formData)
-                        .then(res => {
-                            if (res.status == 200) {
-                                let userData = {
-                                    id: res.data.user.id,
-                                    username: res.data.user.username,
-                                    email: res.data.user.email,
-                                    fullname: res.data.user.fullname,
-                                    token: res.data.token,
-                                    avatar: res.data.user.avatar,
-                                };
-                                this.$store.dispatch("authUser", userData);
+                    try {
+                        var res = await AuthRepository.signup(formData);
+                        if (res.status === 200) {
+                            let userData = {
+                                id: res.data.user.id,
+                                username: res.data.user.username,
+                                email: res.data.user.email,
+                                fullname: res.data.user.fullname,
+                                token: res.data.token,
+                                avatar: res.data.user.avatar
+                            };
+                            this.$store.dispatch("authUser", userData);
+                            setTimeout(() => {
                                 this.$router.push({name: "home"});
-                            }
-                        })
-                        .catch(err => {
-                            if (err) {
-                                this.error = err.response.data.message;
-                                setTimeout(() => this.error = '', 2000)
-                            }
-                        });
+                            }, 1000);
+                        }
+                    } catch (err) {
+                        eventBus.$emit("notifyError", err.response.data.message)
+                    }
                 }
             },
 

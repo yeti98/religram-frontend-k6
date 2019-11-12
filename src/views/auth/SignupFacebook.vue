@@ -1,11 +1,5 @@
 <template>
     <div class="wrap">
-        <div class="header">
-            <div class="logo">
-                <a href="#" title="">Religram</a>
-                <p class="slogan">Heaven in your hands</p>
-            </div>
-        </div>
         <div class="content">
             <div class="form form-sign-up-fb">
                 <form  id="form_sign_up_fb" @submit.prevent="signupfacebook">
@@ -32,17 +26,25 @@
                 </form>
             </div>
             <div class="sign-up">
-                <p>Have a account?<a href="#" title="">Log in</a></p>
+                <p>
+                    Have a account?
+                    <a @click="goLogin">Log in</a>
+                </p>
             </div>
+        </div>
+        <div class="message message-error" v-show="error!='' ">
+            <p>{{error}}</p>
         </div>
     </div>
 </template>
 
 <script>
-
+    import {RepositoryFactory} from '../../repositories/RepositoryFactory'
     import {email, fullname, password, username} from "@/validate/validate";
-    import auth from "../../axios/axios-auth"
     import image2base64 from "image-to-base64"
+    import {eventBus} from "@/main";
+
+    const AuthRepository = RepositoryFactory.get('auth');
 
     export default {
         name: "SignupFacebook",
@@ -53,22 +55,26 @@
                 email: localStorage.getItem('email'),
                 avatar: localStorage.getItem('avatar'),
                 password: "",
+                error: "",
             }
         },
         validations: {
             email, fullname, username, password
         },
         methods: {
+            goLogin() {
+                this.$router.push({name: "login"});
+            },
             getBase64(){
                 image2base64(this.avatar).then((res) => {
                     return res
                 }).catch((error) => {
                     if (error){
-                        console.log(error)
+                        //console.log(error)
                     }
                 })
             },
-            signupfacebook() {
+            async signupfacebook() {
                 this.$v.$touch();
                 if (!this.$v.$invalid) {
                     let formData = {
@@ -79,28 +85,25 @@
                         avatar: this.getBase64(),
 
                     };
-                    auth
-                        .post("/signup", formData)
-                        .then(res => {
-                            if (res.status == 200) {
-                                let userData = {
-                                    id: res.data.user.id,
-                                    username: res.data.user.username,
-                                    email: res.data.user.email,
-                                    fullname: res.data.user.fullname,
-                                    token: res.data.token,
-                                    avatar: res.data.user.avatar,
-                                };
-                                this.$store.dispatch("authUser", userData);
+                    try {
+                        var res = await AuthRepository.signup(formData);
+                        if (res.status === 200) {
+                            let userData = {
+                                id: res.data.user.id,
+                                username: res.data.user.username,
+                                email: res.data.user.email,
+                                fullname: res.data.user.fullname,
+                                token: res.data.token,
+                                avatar: res.data.user.avatar
+                            };
+                            this.$store.dispatch("authUser", userData);
+                            setTimeout(() => {
                                 this.$router.push({name: "home"});
-                            }
-                        })
-                        .catch(err => {
-                            if (err) {
-                                this.error = err.response.data.message;
-                                setTimeout(() => this.error = '', 2000)
-                            }
-                        });
+                            }, 1000);
+                        }
+                    } catch (err) {
+                        eventBus.$emit("notifyError", err.response.data.message)
+                    }
                 }
             }
         }
