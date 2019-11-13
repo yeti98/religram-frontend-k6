@@ -10,6 +10,7 @@ import Profile from '@/views/user/Profile';
 import OtherProfile from '@/views/user/OtherProfile';
 import PostCaption from "@/views/post/PostCaption";
 import EditProfile from "@/views/user/EditProfile";
+import ChangePassword from "@/views/user/ChangePassword";
 
 Vue.use(Router);
 
@@ -68,5 +69,10 @@ export default new Router({
             path: '/editprofile',
             name: 'editprofile',
             component: EditProfile
+        },
+        {
+            path: '/changepassword',
+            name: 'changepassword',
+            component: ChangePassword
         },]
 })

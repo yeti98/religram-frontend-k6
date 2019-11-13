@@ -15,5 +15,8 @@ export default {
 
     login(payload) {
         return Repository.post(`${resource}/login`, payload);
+    },
+    changepass(changepassRequest){
+        return Repository.post(`${resource}/changepassword`, changepassRequest);
     }
 };

@@ -56,7 +56,7 @@
                 </div>
             </div>
         </div>
-        <Footer></Footer>
+        <Footer @reload="reload" key="footerprofile"></Footer>
         <input @change="onFileSelected" name="myFile" ref="inputt" type="file" v-show="false"/>
     </div>
 </template>
@@ -140,10 +140,10 @@
                         email: this.email
                     };
                     try {
-                        var res = await UserRepository.changeuserinfo(userData)
-                        if(res.status===200){
+                        var res = await UserRepository.changeuserinfo(userData);
+                        if (res.status === 200) {
                             this.constusername = userData.username;
-                            eventBus.$emit("notifySuccess", "Save successfuly!")
+                            eventBus.$emit("notifySuccess", "Save successfuly!");
                             this.$store.commit('updateUserInfo', userData)
                         }
                     } catch (e) {
