@@ -20,5 +20,8 @@ export default {
   },
   replyAComment(postId, commentId, commentRequest){
     return postRepository.post(`${resource}/post/${postId}/comment/${commentId}`, commentRequest);
+  },
+  createPost(postRequest){
+    return postRepository.post(`${resource}/post`, postRequest);
   }
 };

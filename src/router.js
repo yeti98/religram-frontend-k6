@@ -8,6 +8,7 @@ import PostDetail from "@/views/post/PostDetail";
 import Create from "@/views/post/Create";
 import Profile from '@/views/user/Profile';
 import OtherProfile from '@/views/user/OtherProfile';
+import PostCaption from "@/views/post/PostCaption";
 
 Vue.use(Router);
 
@@ -56,5 +57,10 @@ export default new Router({
             path: '/user',
             name: 'otherprofile',
             component: OtherProfile
-        },]
+        },
+        {
+            path: '/caption',
+            name: 'caption',
+            component: PostCaption
+        }]
 })
