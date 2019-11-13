@@ -7,6 +7,7 @@ import SignupFacebook from "@/views/auth/SignupFacebook";
 import PostDetail from "@/views/post/PostDetail";
 import Create from "@/views/post/Create";
 import Profile from '@/views/user/Profile';
+import OtherProfile from '@/views/user/OtherProfile';
 
 Vue.use(Router);
 
@@ -50,5 +51,10 @@ export default new Router({
             path: '/profile',
             name: 'profile',
             component: Profile
-        }]
+        },
+        {
+            path: '/user',
+            name: 'otherprofile',
+            component: OtherProfile
+        },]
 })
