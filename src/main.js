@@ -5,6 +5,7 @@ import store from './store/store'
 import Vuelidate from 'vuelidate';
 import TextareaAutosize from "vue-textarea-autosize";
 import VueTimeago from "vue-timeago";
+import Croppa from "vue-croppa";
 
 
 Vue.config.productionTip = false;
@@ -15,6 +16,7 @@ Vue.use(VueTimeago, {
     name: "Timeago", // Component name, `Timeago` by default
     locale: "en" // Default locale
 });
+Vue.use(Croppa);
 new Vue({
     router,
     store,

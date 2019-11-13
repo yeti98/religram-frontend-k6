@@ -5,7 +5,7 @@ import Login from './views/auth/Login';
 import Signup from "@/views/auth/Signup";
 import SignupFacebook from "@/views/auth/SignupFacebook";
 import PostDetail from "@/views/post/PostDetail";
-
+import Create from "@/views/post/Create";
 
 Vue.use(Router);
 
@@ -38,5 +38,11 @@ export default new Router({
             path: "/post",
             name: "postdetail",
             component: PostDetail
+        },
+        {
+            path: "/create",
+            name: "create",
+            component: Create,
+            props: true
         },]
 })
