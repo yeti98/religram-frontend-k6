@@ -13,12 +13,16 @@
                             <p>
                                 <a title>{{userData.username}}</a>
                             </p>
-                            <p>
-                                <a
-                                        @click="$router.push({name: 'editprofile'})"
-                                        class="edit-proflie btn"
-                                >Edit profile</a>
-                            </p>
+                            <div id="outer">
+                                <div class="inner"><p>
+                                    <a @click="$router.push({name: 'editprofile'})" class="edit-proflie btn"
+                                    >Edit profile</a></p>
+                                </div>
+                                <div class="inner"><p>
+                                    <a @click="logout" class="edit-proflie btn"
+                                    >Logout</a>
+                                </p></div>
+                            </div>
                         </div>
                     </div>
                     <div class="post-user__name">
@@ -105,6 +109,10 @@
         },
 
         methods: {
+            logout() {
+                this.$store.dispatch("clearAuth");
+                this.$router.push({name: "login"})
+            },
             async getData() {
                 try {
                     var res = await UserRepository.getUserById(this.id);
@@ -166,3 +174,14 @@
         }
     };
 </script>
+<style scoped>
+    #outer
+    {
+        width:100%;
+        text-align: center;
+    }
+    .inner
+    {
+        display: inline-block;
+    }
+</style>
