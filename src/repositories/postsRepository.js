@@ -14,5 +14,11 @@ export default {
   },
   like(postId){
     return postRepository.post(`${resource}/post/${postId}/like`);
+  },
+  comment(postId, commentRequest){
+    return postRepository.post(`${resource}/post/${postId}/comment`, commentRequest);
+  },
+  replyAComment(postId, commentId, commentRequest){
+    return postRepository.post(`${resource}/post/${postId}/comment/${commentId}`, commentRequest);
   }
 };

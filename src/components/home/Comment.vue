@@ -35,6 +35,7 @@
 <script>
     import ReadMore from "@/components/home/ReadMore";
     import ReplyComment from "./ReplyComment";
+    import {eventBus} from "../../main";
 
     export default {
         name: "comment",
@@ -63,6 +64,7 @@
         computed: {
             formated() {
                 this.rComments = this.comment.replyComments;
+                console.log("rCM",this.rComments)
                 this.rCmCount = this.rComments.length;
                 this.index = Math.min(this.rComments.length - 1, this.index);
                 if (this.rComments.length < 4)
@@ -77,6 +79,9 @@
                         this.index = des - 1;
                     }
                 }
+                console.log("AA", [...new Set(this.rCmShow)].sort(function (a, b) {
+                    return a.createAt.localeCompare(b.createAt);
+                }))
                 return [...new Set(this.rCmShow)].sort(function (a, b) {
                     return a.createAt.localeCompare(b.createAt);
                 });
@@ -84,7 +89,7 @@
         },
         methods: {
             reply() {
-
+                eventBus.$emit("replyComment", this.postID, this.targetComment.id, this.targetComment.user.username)
             },
             viewMoreCm() {
                 if (this.index > 0) {

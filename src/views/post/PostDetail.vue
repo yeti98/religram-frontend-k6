@@ -89,6 +89,12 @@
 
     const PostRepository = RepositoryFactory.get('post');
 
+    function convertCreateAt(offset) {
+        var d = new Date();
+        var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        var nd = new Date(utc + (3600000 * offset));
+        return nd;
+    }
 
     export default {
         components: {
@@ -182,10 +188,72 @@
                 }
             },
 
-            postComment() {
-                // TODO: Đăng comment và thông báo
-            },
+            async postComment() {
+                if (!this.isReply) {
+                    this.mainComment()
+                    // TODO: Thông báo
+                } else {
+                    this.replyComment();
+                    this.isReply = !this.isReply;
+                    // TODO: Thông báo
+                }
 
+            },
+            async replyComment() {
+                try {
+                    let commentRequest = {
+                        userId: window.localStorage.getItem("id"),
+                        comment: this.commentMessage.trim(),
+                        hashtags: [],
+                        mentions: []
+                    };
+                    let res = await PostRepository.replyAComment(this.post.id, this.targetCommentID, commentRequest);
+                    if (res.status === 200) {
+                        for (var ii = 0, len = this.post.comments.length; ii < len; ii++) {
+                            if (this.post.comments[ii].id === this.targetCommentID) {
+                                this.post.comments[ii].replyComments.push({
+                                    user: {
+                                        avatar: window.localStorage.getItem("avatar"),
+                                        username: window.localStorage.getItem("username")
+                                    },
+                                    content: this.commentMessage.trim(),
+                                    replyComments: [],
+                                    createAt: (convertCreateAt("+7.0")).toISOString().slice(0, -1)
+                                });
+                                this.commentMessage = "";
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    eventBus.$emit("notifyError", e.response.data.message)
+                }
+            },
+            async mainComment() {
+                try {
+                    let commentRequest = {
+                        userId: window.localStorage.getItem("id"),
+                        comment: this.commentMessage.trim(),
+                        hashtags: [],
+                        metions: []
+                    };
+                    let res = await PostRepository.comment(this.post.id, commentRequest);
+                    if (res.status === 200) {
+                        this.cmShow = this.cmShow.concat({
+                            user: {
+                                avatar: window.localStorage.getItem("avatar"),
+                                username: window.localStorage.getItem("username")
+                            },
+                            content: this.commentMessage.trim(),
+                            replyComments: [],
+                            createAt: (convertCreateAt("+7.0")).toISOString().slice(0, -1)
+                        });
+                        this.commentMessage = "";
+                    }
+                } catch (e) {
+                    eventBus.$emit("notifyError", e.response.data.message)
+                }
+            },
             async likePost() {
                 // TODO: Thông báo like
                 try {

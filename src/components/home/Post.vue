@@ -79,7 +79,17 @@
 <script>
     import Comment from "@/components/home/Comment";
     import ReadMore from "@/components/home/ReadMore";
+    import {RepositoryFactory} from '@/repositories/RepositoryFactory'
+    import {eventBus} from "@/main";
 
+    function convertCreateAt(offset) {
+        var d = new Date();
+        var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+        var nd = new Date(utc + (3600000 * offset));
+        return nd;
+    }
+
+    const PostRepository = RepositoryFactory.get('post');
     export default {
         components: {
             Comment,
@@ -103,12 +113,21 @@
                 localStorage.removeItem(this.post.id);
             }
         },
+        mounted() {
+            eventBus.$on("replyComment", (postID, targetCommentID, content) => {
+                document.getElementById("text").focus();
+                this.commentMessage = "@" + content;
+                this.isReply = true;
+                this.targetCommentID = targetCommentID
+            })
+        },
         data() {
             return {
                 cmShow: [],
                 commentMessage: "",
                 isLike: false,
-                likeCount: 0
+                likeCount: 0,
+                isReply: false
             };
         },
         created() {
@@ -133,11 +152,57 @@
 
         methods: {
             postComment() {
-
+                // TODO: Thông báo
+                if (!this.isReply) {
+                    this.mainComment()
+                    // TODO: Thông báo
+                } else {
+                    this.replyComment();
+                    this.isReply = !this.isReply;
+                    // TODO: Thông báo
+                }
             },
-
-            likePost() {
-
+            async mainComment() {
+                try {
+                    let commentRequest = {
+                        userId: window.localStorage.getItem("id"),
+                        comment: this.commentMessage.trim(),
+                        hashtags: [],
+                        metions: []
+                    };
+                    let res = await PostRepository.comment(this.post.id, commentRequest);
+                    if (res.status === 200) {
+                        this.cmShow = this.cmShow.concat({
+                            user: {
+                                avatar: window.localStorage.getItem("avatar"),
+                                username: window.localStorage.getItem("username")
+                            },
+                            content: this.commentMessage.trim(),
+                            replyComments: [],
+                            createAt: (convertCreateAt("+7.0")).toISOString().slice(0, -1)
+                        });
+                        this.commentMessage = "";
+                    }
+                } catch (e) {
+                    eventBus.$emit("notifyError", e.response.data.message)
+                }
+            },
+            async likePost() {
+                // TODO: Thông báo
+                try {
+                    var res = await PostRepository.like(this.post.id);
+                    if (res.status === 200) {
+                        if (this.isLike) {
+                            this.isLike = false;
+                            this.likeCount--;
+                        } else {
+                            this.isLike = true;
+                            this.likeCount++;
+                        }
+                    }
+                } catch (e) {
+                    eventBus.$emit("notifyError", e.response.data.message)
+                }
             },
 
             goToUser() {
@@ -149,6 +214,37 @@
                         query: {id: this.post.user.id}
                     });
                 }
+            },
+            async replyComment() {
+                try {
+                    let commentRequest = {
+                        userId: window.localStorage.getItem("id"),
+                        comment: this.commentMessage.trim(),
+                        hashtags: [],
+                        mentions: []
+                    };
+                    let res = await PostRepository.replyAComment(this.post.id, this.targetCommentID, commentRequest);
+                    if (res.status === 200) {
+                        for (var ii = 0, len = this.post.comments.length; ii < len; ii++) {
+                            if (this.post.comments[ii].id === this.targetCommentID) {
+                                this.post.comments[ii].replyComments.push({
+                                    user: {
+                                        avatar: window.localStorage.getItem("avatar"),
+                                        username: window.localStorage.getItem("username")
+                                    },
+                                    content: this.commentMessage.trim(),
+                                    replyComments: [],
+                                    createAt: (convertCreateAt("+7.0")).toISOString().slice(0, -1)
+                                });
+                                this.commentMessage = "";
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    eventBus.$emit("notifyError", e.response.data.message)
+                }
+
             }
         }
     };

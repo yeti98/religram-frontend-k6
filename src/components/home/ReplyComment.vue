@@ -24,7 +24,7 @@
 
 <script>
     import ReadMore from "@/components/home/ReadMore";
-
+    import {eventBus} from "@/main";
     export default {
         name: "ReplyComment",
         components: {
@@ -53,7 +53,7 @@
                 }
             },
             reply() {
-
+                eventBus.$emit("replyComment", this.postID, this.targetComment.id, this.comment.user.username)
             },
         },
     }
