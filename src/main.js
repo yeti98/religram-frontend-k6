@@ -6,7 +6,9 @@ import Vuelidate from 'vuelidate';
 import TextareaAutosize from "vue-textarea-autosize";
 import VueTimeago from "vue-timeago";
 import Croppa from "vue-croppa";
+import firebase from "firebase";
 
+require("firebase/firestore");
 
 Vue.config.productionTip = false;
 Vue.use(Vuelidate);
@@ -40,6 +42,28 @@ Vue.directive('debounce', (el, binding) => {
         }, parseInt(binding.value) || 300);
     }
 });
+var firebaseConfig = {
+    apiKey: "AIzaSyBFznD3t4-br42HcyI0C8yag4HpbVsdPcA",
+    authDomain: "activity-9666b.firebaseapp.com",
+    databaseURL: "https://activity-9666b.firebaseio.com",
+    projectId: "activity-9666b",
+    storageBucket: "activity-9666b.appspot.com",
+    messagingSenderId: "595180244337",
+    appId: "1:595180244337:web:93fcc68c59ee774474bad0"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+var db = firebase.firestore();
+
+window.db = db;
+
+db.settings({
+    timestampsInSnapshots: true
+});
+
+Vue.config.productionTip = false;
+
 new Vue({
     router,
     store,

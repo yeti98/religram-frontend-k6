@@ -94,7 +94,13 @@
 
         methods: {
             async follow() {
-                // TODO: Thông báo
+                if (this.userData.follow === false) {
+                    let formData = {
+                        type: "follow",
+                        targetUser: this.id
+                    };
+                    this.$store.dispatch("saveNewActivity", formData);
+                }
                 try {
                     var res = await UserRepository.follow(this.id);
                     if (res.status === 200) {

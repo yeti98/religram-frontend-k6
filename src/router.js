@@ -15,6 +15,7 @@ import ForgotPasswordSuccess from "@/views/auth/ForgotPasswordSuccess";
 import ResetPassword from "@/views/auth/ResetPassword";
 import ForgotPassword from "@/views/auth/ForgotPassword";
 import Search from "./views/search/Search";
+import Activity from "@/views/activity/Activity";
 
 Vue.use(Router);
 
@@ -98,5 +99,10 @@ export default new Router({
             path: '/search',
             name: 'search',
             component: Search
+        },
+        {
+            path: "/activity",
+            name: "activity",
+            component: Activity
         }]
 })

@@ -38,8 +38,14 @@
         },
         methods: {
             async follow(targetId, index, isFollow) {
-                // TODO: Thông báo
-                if (targetId !== this.yourId){
+                if (isFollow == false) {
+                    let formData = {
+                        type: "follow",
+                        targetUser: targetId
+                    };
+                    this.$store.dispatch("saveNewActivity", formData);
+                }
+                if (targetId !== this.yourId) {
                     try {
                         var res = await UserRepository.follow(this.targetId);
                         if (res.status === 200) {

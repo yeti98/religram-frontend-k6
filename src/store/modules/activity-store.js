@@ -13,7 +13,6 @@ const getters = {};
 
 const actions = {
   saveNewActivity({ commit }, formData) {
-    console.log(formData);
     if (formData.type == "follow") {
       db.collection(`${formData.targetUser}`).add({
         userId: window.localStorage.getItem("id"),
@@ -24,7 +23,6 @@ const actions = {
       });
     } else {
       let type = formData.type;
-      console.log(`${formData.targetUser}`);
       db.collection(`${formData.targetUser}`).add({
         userId: window.localStorage.getItem("id"),
         type: type,
@@ -44,7 +42,7 @@ const actions = {
         snapshot.docChanges().forEach(change => {
           if (change.type === "added") {
             commit("addMessage", change.doc.data());
-            if (create == false) localStorage.setItem("noti", true);
+            if (create === false) localStorage.setItem("noti", true);
           }
         });
         create = false;

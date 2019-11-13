@@ -152,14 +152,25 @@
 
         methods: {
             postComment() {
-                // TODO: Thông báo
                 if (!this.isReply) {
                     this.mainComment()
-                    // TODO: Thông báo
+                    let formData = {
+                        type: "comment",
+                        targetUser: this.post.user.id,
+                        image: this.post.photos[0].photoUri,
+                        postId: this.post.id
+                    };
+                    this.$store.dispatch("saveNewActivity", formData);
                 } else {
                     this.replyComment();
                     this.isReply = !this.isReply;
-                    // TODO: Thông báo
+                    let formData = {
+                        type: "comment",
+                        targetUser: this.post.user.id,
+                        image: this.post.photos[0].photoUri,
+                        postId: this.post.id
+                    };
+                    this.$store.dispatch("saveNewActivity", formData);
                 }
             },
             async mainComment() {
@@ -188,7 +199,6 @@
                 }
             },
             async likePost() {
-                // TODO: Thông báo
                 try {
                     var res = await PostRepository.like(this.post.id);
                     if (res.status === 200) {
@@ -198,6 +208,15 @@
                         } else {
                             this.isLike = true;
                             this.likeCount++;
+                        }
+                        if (this.isLike === false) {
+                            let formData = {
+                                type: "like",
+                                targetUser: this.post.user.id,
+                                image: this.post.photos[0].photoUri,
+                                postId: this.post.id
+                            };
+                            this.$store.dispatch("saveNewActivity", formData);
                         }
                     }
                 } catch (e) {

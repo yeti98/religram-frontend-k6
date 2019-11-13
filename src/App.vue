@@ -10,6 +10,9 @@
         <div class="message message-success" v-show="success!=''">
             <p>{{success}}</p>
         </div>
+        <div class="message message-success" v-show="showNoti" @click="$router.push({name:'activity'})">
+            <p>You got new notification</p>
+        </div>
     </div>
 </template>
 
@@ -23,11 +26,14 @@
         },
         created() {
             this.$store.dispatch("tryToLogin");
+            this.fetchMessages();
         },
         data() {
             return {
+                isCreate: true,
                 error: "",
-                success: ""
+                success: "",
+                showNoti: false
             }
         },
         mounted() {
@@ -42,6 +48,26 @@
         },
         destroyed() {
             eventBus.$off("notifyError")
+        },
+        methods:{
+            fetchMessages() {
+                db.collection(localStorage.getItem("id"))
+                    .orderBy("createAt")
+                    .onSnapshot(snapshot => {
+                        snapshot.docChanges().forEach(change => {
+                            if (change.type === "added") {
+                                if (this.isCreate === false) {
+                                    this.showNoti = true;
+                                    setTimeout(() => {
+                                        this.showNoti = false;
+                                    }, 3000);
+                                }
+                            }
+                        });
+                        this.isCreate = false;
+                    });
+            }
+
         }
     };
 </script>

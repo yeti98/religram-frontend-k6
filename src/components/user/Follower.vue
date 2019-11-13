@@ -42,7 +42,11 @@
         methods: {
             async follow(targetId, index, isFollow) {
                 if (isFollow === false) {
-                    // TODO: Thông báo
+                    let formData = {
+                        type: "follow",
+                        targetUser: this.id
+                    };
+                    this.$store.dispatch("saveNewActivity", formData);
                 }
                 if (targetId !== this.yourId) {
                     try {
