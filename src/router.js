@@ -11,6 +11,9 @@ import OtherProfile from '@/views/user/OtherProfile';
 import PostCaption from "@/views/post/PostCaption";
 import EditProfile from "@/views/user/EditProfile";
 import ChangePassword from "@/views/user/ChangePassword";
+import ForgotPasswordSuccess from "@/views/auth/ForgotPasswordSuccess";
+import ResetPassword from "@/views/auth/ResetPassword";
+import ForgotPassword from "@/views/auth/ForgotPassword";
 
 Vue.use(Router);
 
@@ -74,5 +77,20 @@ export default new Router({
             path: '/changepassword',
             name: 'changepassword',
             component: ChangePassword
+        },
+        {
+            path: "/forgotpasswordsuccess",
+            name: "forgotpasswordsuccess",
+            component: ForgotPasswordSuccess
+        },
+        {
+            path: '/resetpassword',
+            name: 'resetpassword',
+            component: ResetPassword
+        },
+        {
+            path: "/forgotpassword",
+            name: "forgotpassword",
+            component: ForgotPassword
         },]
 })

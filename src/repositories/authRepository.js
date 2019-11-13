@@ -18,5 +18,11 @@ export default {
     },
     changepass(changepassRequest){
         return Repository.post(`${resource}/changepassword`, changepassRequest);
+    },
+    resetpassword(email){
+        return Repository.post(`${resource}/resetpassword`, email);
+    },
+    savenewpass(passRequest){
+        return Repository.post(`${resource}/resetpass`, passRequest);
     }
 };

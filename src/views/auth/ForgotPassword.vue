@@ -1,0 +1,90 @@
+<template>
+    <div class="wrap">
+        <div class="content">
+            <div class="form form-forgot-pw">
+                <p class="center">
+                    <img alt src="images/icon-lock.png"/>
+                </p>
+                <h3 class="center">Trouble Logging In?</h3>
+                <p
+                        class="center"
+                >Enter your username or email and we'll send you a link to get back into account.</p>
+                <form @submit.prevent="onSubmit" id="form_forgot_pw">
+                    <input
+                            :class="{invalid: $v.email.$error}"
+                            class="input-text"
+                            id="email"
+                            name="fpw-email-fb"
+                            placeholder="Email or username"
+                            type="text"
+                            v-model="email"
+                    />
+                    <button class="btn btn-full" id="fpw_submit" name="fpw-submit-fb" type="submit">Submit</button>
+                </form>
+                <div class="label-break">
+                    <span>or</span>
+                </div>
+            </div>
+            <div class="sign-up">
+                <p>
+                    <a @click="$router.push({name: 'signup'})" title>Creat New Account</a>
+                </p>
+            </div>
+            <div class="box-back">
+                <a @click="$router.push({name: 'login'})" title>Back to log in</a>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import {email} from "@/validate/validate";
+    import {RepositoryFactory} from '@/repositories/RepositoryFactory'
+    import {eventBus} from "@/main";
+
+    const AuthRepository = RepositoryFactory.get('auth');
+
+    export default {
+        data() {
+            return {
+                email: "",
+                error: "",
+                isError: false
+            };
+        },
+
+        validations: {
+            email
+        },
+
+        created() {
+            this.isError = this.$route.query.isError;
+            if (this.isError) {
+                eventBus.$emit("notifyError", "It looks like you clicked on an invalid password reset link. Please try again.")
+            }
+        },
+
+        methods: {
+            async onSubmit() {
+                this.$v.$touch();
+                if (!this.$v.$invalid) {
+                    try {
+                        var res = await AuthRepository.resetpassword({email: this.email});
+                        if (res.status === 200) {
+                            this.$router.push({name: "forgotpasswordsuccess"});
+                        }
+                    } catch (e) {
+                        eventBus.$emit("notifyError", e.response.data.message)
+                    }
+                }
+            }
+        }
+    };
+</script>
+
+<style scoped>
+    .invalid {
+        border-width: 2px;
+        border-color: rgb(226, 35, 35);
+    }
+</style>
