@@ -20,5 +20,8 @@ export default {
     },
     getMyPosts(userId, page) {
         return userRepository.get(`${resource}/${userId}/posts?page=${page}`)
+    },
+    changeuserinfo(dataRequest){
+        return userRepository.post(`${resource}`, dataRequest);
     }
 };
