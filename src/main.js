@@ -17,6 +17,29 @@ Vue.use(VueTimeago, {
     locale: "en" // Default locale
 });
 Vue.use(Croppa);
+
+function debounce(fn, delay = 300) {
+    var timeoutID = null;
+    return function () {
+        clearTimeout(timeoutID);
+        var args = arguments;
+        var that = this;
+        timeoutID = setTimeout(function () {
+            fn.apply(that, args);
+        }, delay);
+    }
+}
+
+// this is where we integrate the v-debounce directive!
+// We can add it globally (like now) or locally!
+Vue.directive('debounce', (el, binding) => {
+    if (binding.value !== binding.oldValue) {
+        // window.debounce is our global function what we defined at the very top!
+        el.oninput = debounce(ev => {
+            el.dispatchEvent(new Event('change'));
+        }, parseInt(binding.value) || 300);
+    }
+});
 new Vue({
     router,
     store,

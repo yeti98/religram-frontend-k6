@@ -23,5 +23,11 @@ export default {
     },
     changeuserinfo(dataRequest){
         return userRepository.post(`${resource}`, dataRequest);
+    },
+    searchUser(page, key){
+        return userRepository.post(`${resource}/search?page=${page}&user=${key}`);
+    },
+    searchHashtag(page, key){
+        return userRepository.post(`${resource}/search?page=${page}&hashtag=${key}`);
     }
 };
