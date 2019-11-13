@@ -6,6 +6,7 @@ import Signup from "@/views/auth/Signup";
 import SignupFacebook from "@/views/auth/SignupFacebook";
 import PostDetail from "@/views/post/PostDetail";
 import Create from "@/views/post/Create";
+import Profile from '@/views/user/Profile';
 
 Vue.use(Router);
 
@@ -44,5 +45,10 @@ export default new Router({
             name: "create",
             component: Create,
             props: true
-        },]
+        },
+        {
+            path: '/profile',
+            name: 'profile',
+            component: Profile
+        }]
 })

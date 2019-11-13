@@ -1,18 +1,24 @@
 import Repository from "./Repository";
 
-const resource = "/user/";
+const resource = "/user";
 
-const userRepository = Repository
+const userRepository = Repository;
 userRepository.defaults.headers.common["Authorization"] = "Bearer " + window.localStorage.getItem("token");
 
 export default {
-    getPostsByPage(page) {
-        return userRepository.get(`${resource}/post?page=${page}`);
+    getUserById(userId) {
+        return userRepository.get(`${resource}/${userId}`);
     },
-    getPostById(id) {
-        return userRepository.get(`${resource}/post/${id}`);
+    getFollowers(userId) {
+        return userRepository.get(`${resource}/${userId}/follower`);
     },
-    like(postId){
-        return userRepository.post(`${resource}/post/${postId}/like`);
+    getFollowings(userId) {
+        return userRepository.get(`${resource}/${userId}/following`);
+    },
+    follow(targetId) {
+        return userRepository.post(`${resource}/follow/${targetId}`);
+    },
+    getMyPosts(userId, page) {
+        return userRepository.get(`${resource}/${userId}/posts?page=${page}`)
     }
 };
