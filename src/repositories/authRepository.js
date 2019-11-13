@@ -24,5 +24,8 @@ export default {
     },
     savenewpass(passRequest){
         return Repository.post(`${resource}/resetpass`, passRequest);
+    },
+    verify(token){
+        return Repository.get(`${resource}/verify/${token}`);
     }
 };

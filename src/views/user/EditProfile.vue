@@ -131,6 +131,9 @@
             handleChangePasswordClicked() {
                 this.$router.push({name: 'changepassword'})
             },
+            reload() {
+                location.reload();
+            },
             async onSubmit() {
                 this.$v.$touch();
                 if (!this.$v.$invalid) {

@@ -29,5 +29,8 @@ export default {
     },
     searchHashtag(page, key){
         return userRepository.post(`${resource}/search?page=${page}&hashtag=${key}`);
+    },
+    changeAvatar(dataRequest){
+        return userRepository.post(`${resource}`, dataRequest);
     }
 };

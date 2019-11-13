@@ -16,6 +16,7 @@ import ResetPassword from "@/views/auth/ResetPassword";
 import ForgotPassword from "@/views/auth/ForgotPassword";
 import Search from "./views/search/Search";
 import Activity from "@/views/activity/Activity";
+import VerifyToken from "@/views/auth/VerifyToken";
 
 Vue.use(Router);
 
@@ -104,5 +105,10 @@ export default new Router({
             path: "/activity",
             name: "activity",
             component: Activity
+        },
+        {
+            path: '/verify',
+            name: 'verify',
+            component: VerifyToken
         }]
 })

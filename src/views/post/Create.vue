@@ -48,6 +48,10 @@
 </template>
 <script>
     import Siema from 'siema';
+    import {RepositoryFactory} from '@/repositories/RepositoryFactory'
+    import {eventBus} from "@/main";
+
+    const UserRepository = RepositoryFactory.get('user');
 
     export default {
         components: {},
@@ -121,9 +125,19 @@
                     this.$router.push({name: 'caption'})
                 }
             },
-            changeAvatar(userData) {
-                userData
-                //    TODO Change avatar
+            async changeAvatar(userData) {
+                try {
+                    var res = await UserRepository.changeAvatar(userData);
+                    if (res.status === 200) {
+                        let userData = {
+                            avatar: res.data.user.avatar,
+                        };
+                        this.$store.commit('updateAvatar', userData);
+                        this.$router.push({name: 'profile'})
+                    }
+                } catch (e) {
+                    eventBus.$emit("notifyError", e.response.data.message)
+                }
             },
             handleCancelOnClicked() {
                 if (this.mode === 'avatar') {
