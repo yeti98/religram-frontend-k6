@@ -247,7 +247,7 @@
                         userId: window.localStorage.getItem("id"),
                         comment: this.commentMessage.trim(),
                         hashtags: [],
-                        metions: []
+                        mentions: []
                     };
                     let res = await PostRepository.comment(this.post.id, commentRequest);
                     if (res.status === 200) {
